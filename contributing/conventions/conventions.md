@@ -8,6 +8,7 @@
 - [4. Hyperlinks when mentioning sections](#4-hyperlinks-when-mentioning-sections)
 - [5. No Markdown tables](#5-no-markdown-tables)
 - [6. Section link text](#6-section-link-text)
+- [7. Agent-neutral language](#7-agent-neutral-language)
 
 ---
 
@@ -62,3 +63,16 @@ Good (inline): `[Section name](#323-section-name)`
 Good (TOC): `[3.2.3. Section name](#323-section-name)`
 
 Bad (inline): `[3.2.3. Section name](#323-section-name)`
+
+---
+
+## 7. Agent-neutral language
+
+Convention files must not mention any specific AI agent by name (e.g., Claude, GPT, Gemini). Write so that any capable agent can follow the conventions.
+
+- Write instructions in imperative mood, addressed directly to the agent:
+  - Good: `Read the target file.`
+  - Bad: `Ask Claude to read the target file.`
+- When referring to the executor in third person, write "the agent":
+  - Good: `If the path is missing, the agent must stop and ask the user.`
+  - Bad: `If the path is missing, Claude must stop and ask the user.`
