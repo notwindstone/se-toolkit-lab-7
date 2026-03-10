@@ -740,7 +740,6 @@ See [Autochecker-verifiable outcomes](#421-autochecker-verifiable-outcomes).
 - [ ] Setup instructions cover: fork, clone, install tools, configure environment.
 - [ ] Branch protection rules are documented.
 - [ ] Partner/collaborator setup is documented.
-- [ ] `CONTRIBUTORS.md` exists with placeholder entry.
 - [ ] Diagrams use `.drawio.svg` format.
 - [ ] Tasks with actions across multiple actors or environments include a Mermaid sequence diagram.
 - [ ] Sequence diagram arrow labels each show one action (no `&&`-chained commands).

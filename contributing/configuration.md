@@ -15,12 +15,11 @@
 - [5. Task runner and package manager config](#5-task-runner-and-package-manager-config)
   - [5.1. Rules for task runner](#51-rules-for-task-runner)
 - [6. Docker and deployment pattern](#6-docker-and-deployment-pattern)
-- [7. `CONTRIBUTORS.md` pattern](#7-contributorsmd-pattern)
-- [8. Agent configuration (`AGENTS.md`)](#8-agent-configuration-agentsmd)
-  - [8.1. File layout](#81-file-layout)
-  - [8.2. `AGENTS.md` structure](#82-agentsmd-structure)
-  - [8.3. Creating symlinks](#83-creating-symlinks)
-- [9. Checklist before publishing](#9-checklist-before-publishing)
+- [7. Agent configuration (`AGENTS.md`)](#7-agent-configuration-agentsmd)
+  - [7.1. File layout](#71-file-layout)
+  - [7.2. `AGENTS.md` structure](#72-agentsmd-structure)
+  - [7.3. Creating symlinks](#73-creating-symlinks)
+- [8. Checklist before publishing](#8-checklist-before-publishing)
 
 Use this file when configuring the repository structure, templates, editor settings, and deployment infrastructure.
 
@@ -36,7 +35,6 @@ Create the following directory and file layout. Items marked *(conditional)* are
 ├── AGENTS.md                          # Agent/AI coding assistant configuration (canonical)
 ├── CLAUDE.md -> AGENTS.md             # Symlink (Claude)
 ├── QWEN.md -> AGENTS.md               # Symlink (Qwen)
-├── CONTRIBUTORS.md                    # List of student contributors
 ├── index.md                           # Repository index
 ├── lab/
 │   ├── tasks/
@@ -332,32 +330,11 @@ If the lab involves deployment:
 
 ---
 
-## 7. `CONTRIBUTORS.md` pattern
-
-Include a `CONTRIBUTORS.md` file where students add their GitHub username via a PR:
-
-```markdown
-# Contributors
-
-Students who contributed changes to this repository:
-
-<!--
-johndoe is an example of a GitHub username.
-
-Replace @johndoe with @<your-username> where
-<your-username> is your GitHub username.
--->
-
-- @johndoe
-```
-
----
-
-## 8. Agent configuration (`AGENTS.md`)
+## 7. Agent configuration (`AGENTS.md`)
 
 The repository uses a single canonical agent configuration file that all AI coding assistants read.
 
-### 8.1. File layout
+### 7.1. File layout
 
 ```text
 <repo-root>/
@@ -373,7 +350,7 @@ The repository uses a single canonical agent configuration file that all AI codi
 
 Agent tool directories (`.claude/`, `.qwen/`) are symlinks to `.agents/` so all agents share the same skill definitions.
 
-### 8.2. `AGENTS.md` structure
+### 7.2. `AGENTS.md` structure
 
 `AGENTS.md` is the single source of truth for agent instructions. It follows the same structure as `CLAUDE.md`:
 
@@ -395,7 +372,7 @@ Read before making changes:
 - Each section lists the relevant convention files to read before making changes.
 - `CLAUDE.md` and `QWEN.md` are symlinks — never edit them directly; edit `AGENTS.md`.
 
-### 8.3. Creating symlinks
+### 7.3. Creating symlinks
 
 ```bash
 ln -s AGENTS.md CLAUDE.md
@@ -406,7 +383,7 @@ ln -s .agents .qwen
 
 ---
 
-## 9. Checklist before publishing
+## 8. Checklist before publishing
 
 - [ ] `AGENTS.md` exists at repo root with `CLAUDE.md` and `QWEN.md` as symlinks to it.
 - [ ] All cross-references use relative paths and are valid.
@@ -415,8 +392,6 @@ ln -s .agents .qwen
 - [ ] `.vscode/settings.json` and `.vscode/extensions.json` are configured.
 - [ ] `.gitignore` excludes generated files and secrets for the lab's ecosystem.
 - [ ] Branch protection rules are documented.
-- [ ] `CONTRIBUTORS.md` exists with placeholder entry.
-
 **Conditional (include when applicable):**
 
 - [ ] `.env.example` files are provided; `.env.secret` files are gitignored (if the lab uses environment variables).

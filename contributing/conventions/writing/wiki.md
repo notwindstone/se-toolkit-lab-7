@@ -167,7 +167,6 @@ This provides: what it is, where to find it, official docs, and how to use it.
 - [ ] Setup instructions cover: fork, clone, install tools, configure environment.
 - [ ] Branch protection rules are documented.
 - [ ] Partner/collaborator setup is documented.
-- [ ] `CONTRIBUTORS.md` exists with placeholder entry.
 - [ ] Diagrams use `.drawio.svg` format.
 - [ ] `<!-- TODO -->` markers exist for unfinished sections.
 

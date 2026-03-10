@@ -38,7 +38,7 @@ area of change:
 
 `wiki` | `instructors` | `docs` | `readme` | `caddy` | `lab` |
 `frontend` | `backend` | `tests` | `vscode` | `git` | `github` |
-`agent` | `nix` | `docker` | `database` | `contributors` | `markdownlint`
+`agent` | `nix` | `docker` | `database` | `markdownlint`
 
 ### 3.1. Scope mapping
 
@@ -58,7 +58,6 @@ area of change:
 - `nix` — `flake.nix`, `flake.lock`, Nix-related config
 - `docker` — `Dockerfile`, `compose.yaml`, Docker-related config
 - `database` — `.sql` files, migrations, schema
-- `contributors` — `CONTRIBUTORS.md`
 - `markdownlint` — `.markdownlint*` config
 
 ## 4. Subject line
