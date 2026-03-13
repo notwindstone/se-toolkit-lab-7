@@ -12,9 +12,9 @@
 - [`npm`](#npm)
   - [`package.json`](#packagejson)
   - [`node_modules`](#node_modules)
-- [Common `npm` commands](#common-npm-commands)
-  - [`npm install`](#npm-install)
-- [Common `npm` actions](#common-npm-actions)
+- [Common `pnpm` commands](#common-pnpm-commands)
+  - [`pnpm install`](#pnpm-install)
+- [Common `pnpm` actions](#common-pnpm-actions)
   - [Install `Node.js` dependencies in the directory](#install-nodejs-dependencies-in-the-directory)
 
 ## What is `Node.js`
@@ -135,7 +135,6 @@ Docs:
 ## `npm`
 
 `npm` is the default package manager for [`Node.js`](#what-is-nodejs).
-It installs and manages project dependencies declared in [`package.json`](#packagejson).
 
 It is installed automatically when you install [`Node.js`](#install-nodejs).
 
@@ -147,61 +146,54 @@ Docs:
 
 `package.json` is a configuration [file](./file-system.md#file) in a [`Node.js`](#what-is-nodejs) project that declares the project's [dependencies](./package-manager.md#dependency), scripts, and metadata.
 
-[`npm`](#npm) reads it to know which packages to install and which commands to run.
+[`pnpm`](#pnpm) reads it to know which packages to install and which commands to run.
 
 ### `node_modules`
 
-`node_modules` stores all [`Node.js`](#nodejs) modules installed using [`npm`](#npm) or another package manager for `Node.js`.
+`node_modules` stores all [`Node.js`](#nodejs) modules installed using [`pnpm`](#pnpm) or another package manager for `Node.js`.
 
 This [directory](./file-system.md#directory) is [`.gitignore`](./git.md#gitignore)-d.
 
-## Common `npm` commands
+## Common `pnpm` commands
 
-- [`npm install`](#npm-install)
+- [`pnpm install`](#pnpm-install)
 
-### `npm install`
+### `pnpm install`
 
 This command [installs packages in the specified directory](#install-nodejs-dependencies-in-the-directory).
 
 Executes postinstall hooks.
 
-## Common `npm` actions
+## Common `pnpm` actions
 
 - [Install `Node.js` dependencies in the directory](#install-nodejs-dependencies-in-the-directory)
 
 ### Install `Node.js` dependencies in the directory
 
 > [!NOTE]
-> See [`npm install`](#npm-install), [`package.json`](#packagejson), [directory](./file-system.md#directory).
+> See [`pnpm install`](#pnpm-install), [`package.json`](#packagejson), [directory](./file-system.md#directory).
 
 1. [Open in `VS Code` the project directory](./vs-code.md#open-the-directory).
 
-2. If the `package.json` is in the [root directory of the repository](./git.md#root-directory-of-the-repository),
+2. Navigate to the directory that contains `package.json`,
 
    [run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
 
    ```terminal
-   npm install
+   cd frontend
    ```
 
-3. If the `package.json` is in a [subdirectory](./file-system.md#subdirectory) of the root directory of the repository,
+3. [Run in the `VS Code Terminal`](./vs-code.md#run-a-command-in-the-vs-code-terminal):
 
-   run in the `VS Code Terminal`:
-
-   ```
-   npm install --prefix <frontend-dir>
-   ```
-
-   Example:
-
-   ```
-   npm install --prefix frontend
+   ```terminal
+   pnpm install
    ```
 
 4. Verify that the output is similar to this:
 
    ```terminal
-   added 143 packages, and audited 144 packages in 3s
+   Packages: +184
+   Done in 4.6s using pnpm v10.28.0
    ```
 
 5. [Open the `VS Code Explorer`](./vs-code.md#vs-code-explorer).
