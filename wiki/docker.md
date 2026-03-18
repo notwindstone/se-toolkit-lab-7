@@ -240,4 +240,4 @@ If you installed `Docker Desktop`:
 If `docker compose up` fails with an error like `Bind for <host>:<port> failed: port is already allocated`,
 probably a container from a previous run is still occupying that port.
 
-1. [Remove the container running at the port (REMOTE or LOCAL)](#remove-the-container-running-at-the-port-remote-or-local)
+1. [Remove the container running at the port](#remove-the-container-running-at-the-port).
