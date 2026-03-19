@@ -1,65 +1,55 @@
 # Intent-Based Natural Language Routing
 
-The bot currently only responds to slash commands. In this task, you make it understand plain text — the user types a question in natural language, and the bot uses an LLM to figure out what data to fetch and how to answer.
+Make the bot understand plain text. The user types a question, and the bot uses an LLM to decide what data to fetch and how to answer.
 
 ## Requirements targeted
 
-From the [prioritized requirements](../../README.md#requirements):
-
-- **P1.1** Natural language intent routing — plain text messages (no `/` prefix) interpreted by LLM
+- **P1.1** Natural language intent routing — plain text interpreted by LLM
 - **P1.2** All 9 backend endpoints wrapped as LLM tools
-- **P1.3** Inline keyboard buttons for common actions
-- **P1.4** Multi-step reasoning (LLM chains multiple API calls to answer one question)
+- **P1.3** Inline keyboard buttons
+- **P1.4** Multi-step reasoning (chaining API calls)
 
 ## What you will build
 
-An intent router that accepts plain text messages, sends them to an LLM along with tool definitions (your backend API endpoints), and composes a response from the results.
+An intent router: plain text → LLM with tool definitions → API calls → formatted response.
 
 ```terminal
 $ python bot/bot.py --test "which lab has the lowest pass rate?"
 Based on the data, Lab 03 has the lowest average pass rate at 62.3%.
-Here's the breakdown by task:
 - Backend API: 58.1% (145 attempts)
 - Security Hardening: 66.5% (132 attempts)
 ```
 
-This builds directly on Lab 6 — you reuse the pattern of giving an LLM a set of tools and letting it decide which to call. The difference: in Lab 6 you built a CLI agent, here the agent is embedded inside a user-facing Telegram bot.
+This builds on Lab 6 — same tool use pattern, but embedded in a user-facing bot.
 
 ## How it works
 
 ```
 User: "which lab has the worst results?"
-Bot:  → sends message + tool definitions to LLM
-      → LLM decides: call get_pass_rates for each lab
-      → bot executes the API calls
-      → LLM summarizes the results
-      → bot sends formatted response to user
+  → sends message + tool definitions to LLM
+  → LLM decides: call get_pass_rates for each lab
+  → bot executes the API calls
+  → LLM summarizes
+  → bot sends response
 ```
-
-The LLM receives:
-1. The user's message
-2. A list of available tools (your backend API endpoints as function schemas)
-3. The system prompt explaining the bot's role
-
-The LLM responds with tool calls. Your bot executes them against the real backend, feeds the results back, and the LLM produces the final answer.
 
 ## Required tools
 
-Define **all** backend endpoints as tools the LLM can call. This gives the intent router enough variety to handle diverse questions.
+All 9 backend endpoints as LLM tools:
 
-| Tool name | Endpoint | Description for LLM |
-|-----------|----------|-------------------|
-| `get_items` | `GET /items/` | Get the list of labs and tasks in the LMS |
-| `get_learners` | `GET /learners/` | Get enrolled students and their groups |
-| `get_scores` | `GET /analytics/scores?lab=` | Get score distribution (4 buckets) for a lab |
-| `get_pass_rates` | `GET /analytics/pass-rates?lab=` | Get per-task average scores and attempt counts |
-| `get_timeline` | `GET /analytics/timeline?lab=` | Get submissions per day for a lab |
-| `get_groups` | `GET /analytics/groups?lab=` | Get per-group average scores and student counts |
-| `get_top_learners` | `GET /analytics/top-learners?lab=&limit=` | Get top N learners by average score |
-| `get_completion_rate` | `GET /analytics/completion-rate?lab=` | Get completion rate percentage for a lab |
-| `trigger_sync` | `POST /pipeline/sync` | Trigger ETL sync to refresh data from autochecker |
+| Tool | Endpoint | LLM description |
+|------|----------|----------------|
+| `get_items` | `GET /items/` | List of labs and tasks |
+| `get_learners` | `GET /learners/` | Enrolled students and groups |
+| `get_scores` | `GET /analytics/scores?lab=` | Score distribution (4 buckets) |
+| `get_pass_rates` | `GET /analytics/pass-rates?lab=` | Per-task averages and attempt counts |
+| `get_timeline` | `GET /analytics/timeline?lab=` | Submissions per day |
+| `get_groups` | `GET /analytics/groups?lab=` | Per-group scores and student counts |
+| `get_top_learners` | `GET /analytics/top-learners?lab=&limit=` | Top N learners by score |
+| `get_completion_rate` | `GET /analytics/completion-rate?lab=` | Completion rate percentage |
+| `trigger_sync` | `POST /pipeline/sync` | Refresh data from autochecker |
 
-Example tool schema:
+Example schema:
 
 ```python
 {
@@ -78,87 +68,57 @@ Example tool schema:
 }
 ```
 
-## Scenarios to cover
+## Scenarios
 
-Your intent router should handle these categories:
+**Single API call:**
 
-**Direct data queries (single API call):**
+| Message | Behavior |
+|---------|----------|
+| "what labs are available?" | `get_items` → list labs |
+| "show me scores for lab 4" | `get_pass_rates(lab="lab-04")` → format |
+| "who are the top 5 students?" | `get_top_learners(limit=5)` → leaderboard |
+| "which group is best in lab 3?" | `get_groups(lab="lab-03")` → rank |
 
-| User message | Expected behavior |
-|---|---|
-| "what labs are available?" | Calls `get_items`, lists labs |
-| "how many students are enrolled?" | Calls `get_learners`, counts |
-| "show me scores for lab 4" | Calls `get_pass_rates(lab="lab-04")`, formats results |
-| "who are the top 5 students?" | Calls `get_top_learners(limit=5)`, formats leaderboard |
-| "which group is doing best in lab 3?" | Calls `get_groups(lab="lab-03")`, ranks groups |
-| "how many submissions were there today?" | Calls `get_timeline`, filters recent |
+**Multi-step:**
 
-**Multi-step reasoning (multiple API calls):**
+| Message | Behavior |
+|---------|----------|
+| "which lab has the lowest pass rate?" | `get_items` → `get_pass_rates` per lab → compare |
+| "compare group A and group B" | `get_groups` → filter → compare |
 
-| User message | Expected behavior |
-|---|---|
-| "which lab has the lowest pass rate?" | Calls `get_items` → `get_pass_rates` per lab → compares |
-| "compare group A and group B" | Calls `get_groups` → filters → compares |
+**Fallback:**
 
-**Fallback / ambiguous:**
-
-| User message | Expected behavior |
-|---|---|
-| "hello" | Friendly greeting + hint about capabilities |
-| "asdfgh" | "I didn't understand. Here's what I can help with..." |
-| "lab 4" | Clarify: "What about lab 4? I can show scores, pass rates..." |
+| Message | Behavior |
+|---------|----------|
+| "hello" | Greeting + capabilities hint |
+| "asdfgh" | "I didn't understand. Here's what I can do..." |
+| "lab 4" | "What about lab 4? I can show scores, pass rates..." |
 
 ## Inline buttons
 
-Add inline keyboard buttons or a reply keyboard so users can discover available actions without typing. For example, after `/start`, show buttons for common queries.
-
-## Deliverables
-
-### 1. Intent router (`bot/handlers/intent.py`)
-
-Accepts plain text (no `/` prefix), sends to LLM with tool definitions, executes tool calls, returns formatted response. Must work in `--test` mode.
-
-### 2. All 9 tools defined and wired
-
-Each tool from the table above must be defined as a function schema and have a working implementation that calls the corresponding backend endpoint.
-
-### 3. Fallback handling
-
-Unknown or ambiguous input returns a helpful message listing capabilities — not a crash or empty response.
-
-### 4. Inline buttons
-
-Keyboard markup (inline or reply) for common actions. Must be present in the source code.
+Add keyboard buttons so users can discover actions without typing.
 
 ## Acceptance criteria
 
-- [ ] `--test "what labs are available"` (no `/` prefix) returns a non-empty answer (at least 20 characters).
-- [ ] `--test "which lab has the lowest pass rate"` returns an answer mentioning a specific lab.
-- [ ] `--test "asdfgh"` returns a helpful message, not a crash or empty response.
-- [ ] Source code contains keyboard/button setup (`InlineKeyboardMarkup`, `ReplyKeyboardMarkup`, or equivalent).
-- [ ] Source code defines at least 9 tool/function schemas for the LLM.
-- [ ] Changes follow the Git workflow (issue, branch, PR, review, merge).
+- [ ] `--test "what labs are available"` returns non-empty answer (at least 20 chars).
+- [ ] `--test "which lab has the lowest pass rate"` mentions a specific lab.
+- [ ] `--test "asdfgh"` returns a helpful message, no crash.
+- [ ] Source code contains keyboard/button setup.
+- [ ] Source code defines at least 9 tool/function schemas.
+- [ ] Git workflow followed.
 
 ## Agent instructions
 
-As a coding agent, follow these instructions to maximize the student's learning. This is critical — do not skip these steps.
+Follow these to maximize learning. Do not skip.
 
-**Engage before explaining.** Don't lecture — ask a brief question first, let the student think, then fill in the gaps concisely. If the student already understands, move on.
+**Engage before explaining.** Ask first, let the student think, then fill gaps.
 
-**Before implementing, check understanding:**
+> Ask: "Do you know how LLM function calling works? How does the LLM decide which tool to call?" If not, explain with one example: one tool, one message, the full loop (user → LLM → tool_call → execute → feed back → answer). Keep it short.
 
-> Ask: "Do you know how LLM function calling works? How does the LLM decide which tool to call?" If the student isn't sure, explain concisely with one concrete example: one tool, one user message, the full flow (user → LLM → tool_call → execute → feed back → final answer). Keep it short.
+> Ask: "Why does the tool description matter more than the prompt for tool selection?" Explain: the LLM reads descriptions to pick tools — poor descriptions mean wrong tools.
 
-**While designing tools:**
+> Before implementing, ask: "If the user says 'which lab has the lowest pass rate?', what should happen step by step?" Walk through together.
 
-> Ask: "Why do you think the tool description matters more than the system prompt for tool selection?" Then explain: the LLM reads descriptions to decide which tool fits — poor descriptions lead to wrong tools regardless of prompt quality.
+> When debugging (wrong tool, text instead of tool call), ask: "What do you think went wrong?" Show the actual messages sent to the LLM. Teach the diagnostic process.
 
-> Before implementing the loop, ask: "If the user says 'which lab has the lowest pass rate?', what should happen step by step?" Walk through the expected reasoning together.
-
-**While debugging:**
-
-> When something goes wrong (LLM returns text instead of tool calls, wrong tool selected, incorrect answer), ask: "What do you think went wrong?" Then show the actual messages being sent to the LLM and explain the root cause. This teaches debugging as a transferable skill.
-
-**Fallback handling:**
-
-> Ask: "What should happen when the user types 'asdfgh'? What makes a good fallback vs a bad one?" Then explain: a fallback that shows capabilities is better than "I don't understand."
+> Ask: "What makes a good fallback vs a bad one?" Explain: showing capabilities beats "I don't understand."

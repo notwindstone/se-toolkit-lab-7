@@ -1,25 +1,23 @@
 # Plan and Scaffold
 
-Use your coding agent to create a development plan and project skeleton for the Telegram bot. This is the foundation — you will implement the actual features in Tasks 2–3.
+Use your coding agent to create a development plan and project skeleton for the Telegram bot.
 
 ## Requirements targeted
 
-From the [prioritized requirements](../../README.md#requirements):
-
-- **P0.1** Bot project scaffolded with testable handler architecture (handlers work without Telegram)
-- **P0.2** CLI test mode: `python bot/bot.py --test "/command"` — prints response to stdout, exits
+- **P0.1** Testable handler architecture — handlers work without Telegram
+- **P0.2** CLI test mode: `python bot/bot.py --test "/command"` prints response to stdout
 
 ## What you will build
 
-A `bot/` directory inside your repo containing the scaffolded project: entry point, handler layer, configuration, dependencies, and a `--test` mode for offline verification.
+A `bot/` directory with entry point, handler layer, configuration, dependencies, and `--test` mode.
 
 ```
 se-toolkit-lab-7/
 ├── bot/                    ← NEW
-│   ├── bot.py              ← entry point
-│   ├── handlers/           ← command handlers (separated from Telegram transport)
+│   ├── bot.py              ← entry point (Telegram + --test mode)
+│   ├── handlers/           ← command handlers (no Telegram dependency)
 │   ├── services/           ← API client, LLM client
-│   ├── config.py           ← environment variable loading
+│   ├── config.py           ← env var loading
 │   ├── requirements.txt    ← bot dependencies
 │   └── PLAN.md             ← development plan
 ├── backend/                ← existing
@@ -27,93 +25,74 @@ se-toolkit-lab-7/
 └── docker-compose.yml      ← existing
 ```
 
-The entry point must support a `--test` flag for offline command verification:
+## Test mode
+
+The autochecker verifies the bot via `--test` — no Telegram needed:
 
 ```terminal
-python bot/bot.py --test "/start"
-```
-
-This prints the bot's response to stdout and exits — no Telegram connection needed. The autochecker uses this to verify your bot's behavior.
-
-## Test mode specification
-
-The `--test` flag is how the autochecker verifies your bot without Telegram:
-
-```terminal
-# Slash commands
 python bot/bot.py --test "/start"
 python bot/bot.py --test "/help"
 python bot/bot.py --test "/health"
-python bot/bot.py --test "/labs"
 python bot/bot.py --test "/scores lab-04"
-
-# Natural language (Task 3)
-python bot/bot.py --test "what labs are available"
-python bot/bot.py --test "which lab has the lowest pass rate"
+python bot/bot.py --test "what labs are available"    # Task 3
 ```
 
-**Behavior:**
-- Prints the bot's response text to **stdout**
-- Reads configuration from `.env.agent.secret` (`LMS_API_URL`, `LMS_API_KEY`, `LLM_API_KEY`, etc.)
-- Exits with code **0** on success, non-zero on error
-- Does **not** connect to Telegram (no `BOT_TOKEN` required in test mode)
+- Prints response to **stdout**, exits with code **0**
+- Reads config from `.env.agent.secret` (`LMS_API_URL`, `LMS_API_KEY`, `LLM_API_KEY`)
+- Does **not** connect to Telegram
 
 ## Deliverables
 
 ### 1. Development plan (`bot/PLAN.md`)
 
-A plan produced with your coding agent's help. Should describe the approach for all tasks (scaffold, backend integration, intent routing, deployment). At least 100 words.
+Describe the approach for all tasks (scaffold, backend integration, intent routing, deployment). At least 100 words.
 
 ### 2. Bot entry point (`bot/bot.py`)
 
-The main entry file. Must support `--test` mode. In this task, handlers can return placeholder text — real implementation comes in Task 2.
+Must support `--test` mode. Handlers can return placeholder text for now.
 
 ### 3. Handler directory (`bot/handlers/`)
 
-A directory containing handler modules, separated from the Telegram transport layer. The `--test` mode calls handlers directly without Telegram.
+Handler modules separated from Telegram transport. `--test` calls them directly.
 
 ### 4. Dependencies (`bot/requirements.txt`)
 
-Bot-specific Python dependencies. Must install without errors.
+Must install without errors.
 
 ### 5. Environment example (`.env.agent.example`)
 
-Add `BOT_TOKEN`, `LMS_API_URL`, and `LMS_API_KEY` to the existing `.env.agent.example` file with placeholder values. Students copy this to `.env.agent.secret` and fill in real values.
+Add `BOT_TOKEN`, `LMS_API_URL`, `LMS_API_KEY` with placeholder values. Students copy to `.env.agent.secret` and fill in real values.
 
 ## Acceptance criteria
 
-- [ ] `bot/PLAN.md` exists and has at least 100 words.
-- [ ] `.env.agent.example` contains `BOT_TOKEN`, `LMS_API_URL`, and `LMS_API_KEY`.
+- [ ] `bot/PLAN.md` exists with at least 100 words.
+- [ ] `.env.agent.example` contains `BOT_TOKEN`, `LMS_API_URL`, `LMS_API_KEY`.
 - [ ] `bot/requirements.txt` exists and installs without errors.
-- [ ] `bot/handlers/` directory exists with at least one handler module.
-- [ ] `python bot/bot.py --test "/start"` exits with code 0 and prints non-empty output.
-- [ ] The repo is cloned on the VM at `~/se-toolkit-lab-7`.
-- [ ] Changes follow the Git workflow (issue, branch, PR, review, merge).
+- [ ] `bot/handlers/` directory exists with at least one module.
+- [ ] `python bot/bot.py --test "/start"` exits 0 with non-empty output.
+- [ ] Repo is cloned at `~/se-toolkit-lab-7` on the VM.
+- [ ] Git workflow followed (issue, branch, PR, review, merge).
 
 ## Agent instructions
 
-As a coding agent, follow these instructions to maximize the student's learning. This is critical — do not skip these steps.
+Follow these to maximize learning. Do not skip.
 
-**Engage before explaining.** Don't lecture — ask a brief question first, let the student think, then fill in the gaps concisely. If the student already understands, move on. If not, explain with an analogy.
+**Engage before explaining.** Ask a brief question, let the student think, then fill gaps concisely. If they already understand, move on.
 
 **Before scaffolding:**
 
-> Ask: "Do you know what 'testable handler architecture' means? Why would we want handlers that work without Telegram running?" The student likely doesn't know the term — explain concisely: a handler is just a function that takes input and returns a response. If it depends on Telegram, you can't test it without running a bot. If it's a plain function, you can call it from `--test` mode, from unit tests, or from Telegram — same logic, different entry points. Compare to web handlers that work without a running HTTP server.
+> Ask: "Do you know what 'testable handler architecture' means?" The student likely doesn't — explain: a handler is a function that takes input and returns a response. If it depends on Telegram, you can't test it without a running bot. As a plain function, you can call it from `--test`, from tests, or from Telegram — same logic, different entry points.
 
-> Ask: "What do you think `--test` mode should do? Why does the autochecker need it?" Then fill in any gaps and walk through what happens when `python bot/bot.py --test "/start"` runs.
+> Ask: "What should `--test` mode do?" Fill in gaps, then walk through what happens when `python bot/bot.py --test "/start"` runs.
 
 **While planning:**
 
-> Ask the student about their preferences before writing the plan: which Telegram library, how to organize files, what naming conventions. The plan should reflect their decisions.
-
-> For each file in the plan, explain its responsibility in one sentence. Ask: "Does this structure make sense? Would you change anything?"
+> Ask the student about their preferences: Telegram library, file organization, naming. The plan should reflect their decisions. Explain each file's responsibility in one sentence.
 
 **While scaffolding:**
 
-> For each file you create, explain why it exists and how it connects to the others. Don't generate code silently.
-
-> After scaffolding, ask: "Can you trace the code path — when `--test "/start"` runs, which functions get called?" Walk through it together.
+> Explain each file as you create it. After scaffolding, ask: "Can you trace the code path when `--test "/start"` runs?"
 
 **After verifying:**
 
-> Ask: "If you wanted to add a new command `/foo`, what would you need to change?" Make sure the student can answer before moving on.
+> Ask: "If you wanted to add `/foo`, what would you change?" Make sure they can answer.
