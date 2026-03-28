@@ -7,13 +7,40 @@ They don't know about Telegram - this makes them testable.
 
 from services.api_client import lms_client, LMSAPIError
 
+# Inline keyboard button definitions for Telegram
+# These are shown after /start to help users discover actions
+KEYBOARD_BUTTONS = [
+    ["📊 Check backend health", "/health"],
+    ["📚 List available labs", "/labs"],
+    ["📈 View scores for lab-04", "/scores lab-04"],
+    ["❓ Show help", "/help"],
+]
+
+
+def get_keyboard_markup() -> str:
+    """
+    Return keyboard button configuration.
+    In Telegram, these would be inline keyboard buttons.
+    For --test mode, we show them as text suggestions.
+    """
+    lines = ["\nQuick actions:"]
+    for label, command in KEYBOARD_BUTTONS:
+        lines.append(f"  {label} → `{command}`")
+    return "\n".join(lines)
+
 
 def handle_start() -> str:
     """Handle /start command."""
     return (
         "Welcome to the LMS Bot! 👋\n\n"
         "I can help you check backend status, list available labs, and view your scores.\n"
-        "Use /help to see all available commands."
+        "You can use slash commands OR just ask me questions in plain English!\n\n"
+        "Try asking:\n"
+        "  • \"what labs are available?\"\n"
+        "  • \"show me scores for lab 4\"\n"
+        "  • \"which lab has the lowest pass rate?\"\n"
+        "  • \"who are the top 5 students in lab-04?\""
+        f"{get_keyboard_markup()}"
     )
 
 
