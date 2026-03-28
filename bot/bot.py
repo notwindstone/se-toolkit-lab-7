@@ -2,6 +2,7 @@
 LMS Telegram Bot entry point.
 
 Supports --test mode for offline testing without Telegram connection.
+In --test mode, plain text messages are routed through the LLM intent router.
 """
 
 import argparse
@@ -19,6 +20,7 @@ from handlers import (
     handle_scores,
     handle_unknown,
 )
+from handlers.intent_router import handle_natural_language
 
 
 def process_command(command: str) -> str:
@@ -27,20 +29,26 @@ def process_command(command: str) -> str:
     parts = command.strip().split(maxsplit=1)
     cmd = parts[0].lower()
     args = parts[1] if len(parts) > 1 else ""
-    
-    # Route to handlers
-    if cmd == "/start":
-        return handle_start()
-    elif cmd == "/help":
-        return handle_help()
-    elif cmd == "/health":
-        return handle_health()
-    elif cmd == "/labs":
-        return handle_labs()
-    elif cmd == "/scores":
-        return handle_scores(args)
+
+    # Check if this is a slash command
+    if cmd.startswith("/"):
+        # Route to slash command handlers
+        if cmd == "/start":
+            return handle_start()
+        elif cmd == "/help":
+            return handle_help()
+        elif cmd == "/health":
+            return handle_health()
+        elif cmd == "/labs":
+            return handle_labs()
+        elif cmd == "/scores":
+            return handle_scores(args)
+        else:
+            return handle_unknown(cmd)
     else:
-        return handle_unknown(cmd)
+        # Plain text message - route through LLM intent router
+        # The entire message is the input (not just the first word)
+        return handle_natural_language(command, debug=True)
 
 
 def main():
