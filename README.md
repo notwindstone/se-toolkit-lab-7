@@ -95,3 +95,95 @@ By the end of this lab, you should be able to say:
 ### Optional
 
 1. [Flutter Web Chatbot](./lab/tasks/optional/task-1.md)
+
+## Deploy
+
+This section explains how to deploy the Telegram bot alongside the existing backend using Docker Compose.
+
+### Prerequisites
+
+- Backend is running and healthy (`curl -sf http://localhost:42002/docs` returns 200)
+- `.env.docker.secret` contains all required environment variables
+- `.env.bot.secret` contains bot-specific credentials (used for local testing)
+
+### Required environment variables
+
+The following variables must be set in `.env.docker.secret`:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `BOT_TOKEN` | Telegram bot token from @BotFather | `8687489478:AAF...` |
+| `LMS_API_KEY` | API key for the LMS backend | `my-secret-api-key` |
+| `LLM_API_KEY` | API key for the LLM service | `sk-...` |
+| `LLM_API_BASE_URL` | LLM API base URL (use `host.docker.internal` for Docker) | `http://host.docker.internal:42005/v1` |
+| `LLM_API_MODEL` | LLM model name | `coder-model` |
+
+### Deploy commands
+
+1. **Stop the background bot process** (if running):
+   ```bash
+   cd ~/se-toolkit-lab-7
+   pkill -f "bot.py" 2>/dev/null
+   ```
+
+2. **Build and start all services**:
+   ```bash
+   docker compose --env-file .env.docker.secret up --build -d
+   ```
+
+3. **Check service status**:
+   ```bash
+   docker compose --env-file .env.docker.secret ps
+   ```
+
+   You should see `bot` running alongside `backend`, `postgres`, `caddy`.
+
+4. **View bot logs**:
+   ```bash
+   docker compose --env-file .env.docker.secret logs bot --tail 20
+   ```
+
+   Look for "Application started" and no Python tracebacks.
+
+### Verify deployment
+
+**In Telegram:**
+1. `/start` — should return welcome message with keyboard buttons
+2. `/health` — should show backend status and item count
+3. "what labs are available?" — should list all labs (LLM-powered)
+4. "which lab has the lowest pass rate?" — should compare all labs (multi-step reasoning)
+
+**On the VM:**
+```bash
+# Check bot container is running
+docker compose --env-file .env.docker.secret ps bot
+
+# Check backend is still healthy
+curl -sf http://localhost:42002/docs
+
+# Check git remote matches your repo
+git remote get-url origin
+```
+
+### Troubleshooting
+
+| Symptom | Solution |
+|---------|----------|
+| Bot container keeps restarting | Check logs: `docker compose logs bot`. Usually missing env var or import error. |
+| `/health` fails but worked before | `LMS_API_BASE_URL` must be `http://backend:8000` (not `localhost`). |
+| LLM queries fail | `LLM_API_BASE_URL` must use `host.docker.internal` (not `localhost`). |
+| "BOT_TOKEN is required" | Add `BOT_TOKEN` to `.env.docker.secret`. |
+| Build fails at `uv sync --frozen` | Ensure `bot/uv.lock` exists and is copied in Dockerfile. |
+
+### Stop and restart
+
+```bash
+# Stop all services
+docker compose --env-file .env.docker.secret down
+
+# Restart bot only
+docker compose --env-file .env.docker.secret restart bot
+
+# Rebuild and restart (after code changes)
+docker compose --env-file .env.docker.secret up --build -d bot
+```
